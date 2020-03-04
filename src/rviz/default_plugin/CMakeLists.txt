@@ -1,3 +1,5 @@
+find_package(mbf_msgs)
+
 set(SOURCE_FILES
   axes_display.cpp
   camera_display.cpp
@@ -55,6 +57,8 @@ set(SOURCE_FILES
   tools/point_tool.cpp
   tools/pose_tool.cpp
   tools/goal_tool.cpp
+  tools/custom/record_goal_tool.cpp
+  tools/custom/publish_goal_tool.cpp
   tools/initial_pose_tool.cpp
   tools/selection_tool.cpp
   tools/interaction_tool.cpp

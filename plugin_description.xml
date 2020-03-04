@@ -242,6 +242,16 @@
       Publish a goal pose for the robot.  After one use, reverts to default tool.
     </description>
   </class>
+  <class name="rviz/RecordGoal" type="rviz::RecordGoalTool" base_class_type="rviz::Tool">
+    <description>
+      Record and save a goal pose to the given file.
+    </description>
+  </class>
+  <class name="rviz/PublishGoal" type="rviz::PublishGoalTool" base_class_type="rviz::Tool">
+    <description>
+      Read goal path message from a given file and publish them as move_base_flex topic.
+    </description>
+  </class>
   <class name="rviz/SetInitialPose" type="rviz::InitialPoseTool" base_class_type="rviz::Tool">
     <description>
       Publish an initial pose for the robot.  After one use, reverts to default tool.
