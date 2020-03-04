@@ -172,6 +172,9 @@ void ToolManager::handleChar( QKeyEvent* event, RenderPanel* panel )
 
 void ToolManager::setCurrentTool( Tool* tool )
 {
+  if(current_tool_ == tool) {
+    tool = nullptr;
+  }
   if( current_tool_ )
   {
     current_tool_->deactivate();

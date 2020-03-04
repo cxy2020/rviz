@@ -1240,6 +1240,15 @@ void VisualizationFrame::indicateToolIsCurrent( Tool* tool )
   {
     action->setChecked( true );
   }
+  else {
+    //if set no tool, uncheck all the tools in the current frame
+    for (std::map<Tool*,QAction*>::iterator iter = tool_to_action_map_.begin();
+         iter != tool_to_action_map_.end(); ++iter) {
+      if((*iter).second) {
+        (*iter).second->setChecked(false);
+      }
+    }
+  }
 }
 
 void VisualizationFrame::showHelpPanel()
