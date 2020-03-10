@@ -252,6 +252,11 @@
       Read goal path message from a given file and publish them as move_base_flex topic.
     </description>
   </class>
+  <class name="rviz/GenerateCleanPath" type="rviz::GenerateCleanPathTool" base_class_type="rviz::Tool">
+    <description>
+      Generate cleaning path with the parameters clicked on the ui.
+    </description>
+  </class>
   <class name="rviz/SetInitialPose" type="rviz::InitialPoseTool" base_class_type="rviz::Tool">
     <description>
       Publish an initial pose for the robot.  After one use, reverts to default tool.

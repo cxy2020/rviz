@@ -59,6 +59,7 @@ set(SOURCE_FILES
   tools/goal_tool.cpp
   tools/custom/record_goal_tool.cpp
   tools/custom/publish_goal_tool.cpp
+  tools/custom/generate_clean_path_tool.cpp
   tools/initial_pose_tool.cpp
   tools/selection_tool.cpp
   tools/interaction_tool.cpp
@@ -72,6 +73,7 @@ set(SOURCE_FILES
   wrench_visual.cpp
 )
 
+include_directories(tools/custom)
 add_library(${rviz_DEFAULT_PLUGIN_LIBRARY_TARGET_NAME} ${SOURCE_FILES})
 include(GenerateExportHeader)
 set(EXPORT_FILE_NAME ${EXPORT_HEADER_DIR}/rviz/default_plugin/${rviz_DEFAULT_PLUGIN_LIBRARY_TARGET_NAME}_export.h)
@@ -80,12 +82,14 @@ if(NOT WIN32)
   set_target_properties(${rviz_DEFAULT_PLUGIN_LIBRARY_TARGET_NAME}
     PROPERTIES COMPILE_FLAGS "-std=c++11")
 endif()
+
 target_link_libraries(${rviz_DEFAULT_PLUGIN_LIBRARY_TARGET_NAME}
   ${PROJECT_NAME}
   ${Boost_LIBRARIES}
   ${catkin_LIBRARIES}
   ${OGRE_OV_LIBRARIES_ABS}
   ${QT_LIBRARIES}
+  ${CATKIN_DEVEL_PREFIX}/lib/libtraj_tools.a
 )
 
 #catkin_lint: ignore_once external_file

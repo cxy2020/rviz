@@ -9,6 +9,7 @@
 # include "rviz/default_plugin/tools/pose_tool.h"
 #endif
 
+class QFileDialog;
 namespace rviz
 {
 
@@ -23,6 +24,20 @@ public:
   virtual int processMouseEvent( ViewportMouseEvent& event );
 
   virtual void deactivate();
+
+  static QString LoadLastFilePath();
+
+  static void UpdateLastFilePath(const QFileDialog &file_dialog);
+
+  static void SaveToFile(const std::vector<geometry_msgs::PoseStamped>& gola_path);
+
+  inline const std::vector<geometry_msgs::PoseStamped>& goal_path() const {
+    return goal_path_;
+  }
+
+  inline void clear_goal_path() {
+    goal_path_.clear();
+  }
 
 protected:
   virtual void onPoseSet(double x, double y, double theta);
