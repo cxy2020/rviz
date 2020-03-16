@@ -3,19 +3,15 @@
 
 #ifndef Q_MOC_RUN  // See: https://bugreports.qt-project.org/browse/QTBUG-22829
 # include <QObject>
-# include "rviz/default_plugin/tools/custom/record_goal_tool.h"
+# include "rviz/default_plugin/tools/pose_tool.h"
 #endif
 
-//#include <Eigen/Dense>
-//#include "base_tools/base_type.h"
+#include <geometry_msgs/PoseStamped.h>
 
-namespace traj_tools {
-  class Path2d;
-}
 namespace rviz
 {
 
-class GenerateCleanPathTool: public RecordGoalTool
+class GenerateCleanPathTool : public PoseTool
 {
 Q_OBJECT
 public:
@@ -23,17 +19,15 @@ public:
   virtual ~GenerateCleanPathTool() {}
   virtual void onInitialize();
 
+  virtual int processMouseEvent( ViewportMouseEvent& event );
+
   virtual void deactivate();
 
-  static void GetPathPoint(const traj_tools::Path2d &path,
-                           double precision,
-                           const std_msgs::Header &header,
-                           std::vector<geometry_msgs::PoseStamped> &path_points);
-//private:
-//  static double judge_target_theta(const Vec2& point0,
-//                                   Float theta0,
-//                                   const Vec2& point1,
-//                                   Float theta1);
+protected:
+  virtual void onPoseSet(double x, double y, double theta);
+
+private:
+  std::vector<geometry_msgs::PoseStamped> goal_path_;
 };
 
 }

@@ -30,11 +30,13 @@
 #ifndef RVIZ_GOAL_TOOL_H
 #define RVIZ_GOAL_TOOL_H
 
+# include <ros/ros.h>
+#include <geometry_msgs/PoseStamped.h>
+#include <actionlib/client/simple_action_client.h>
+#include <mbf_msgs/MoveBaseAction.h>
+
 #ifndef Q_MOC_RUN  // See: https://bugreports.qt-project.org/browse/QTBUG-22829
 # include <QObject>
-
-# include <ros/ros.h>
-
 # include "rviz/default_plugin/tools/pose_tool.h"
 #endif
 
@@ -43,6 +45,8 @@ namespace rviz
 class Arrow;
 class DisplayContext;
 class StringProperty;
+
+typedef actionlib::SimpleActionClient<mbf_msgs::MoveBaseAction> MovePointClient;
 
 class GoalTool: public PoseTool
 {
@@ -59,10 +63,20 @@ private Q_SLOTS:
   void updateTopic();
 
 private:
+  void MoveBaseUpdate(const mbf_msgs::MoveBaseFeedbackConstPtr& move_base_feedback);
+  void MoveBaseDoneCallback(const actionlib::SimpleClientGoalState & state,
+                            const mbf_msgs::MoveBaseResultConstPtr & result);
+  void SaveGoalPath(const ros::TimerEvent& event);
+
   ros::NodeHandle nh_;
   ros::Publisher pub_;
 
   StringProperty* topic_property_;
+  std::vector<geometry_msgs::PoseStamped> poses_to_save_;
+  MovePointClient move_client_;
+
+  ros::Timer save_file_timer_;
+  bool is_file_saved_;
 };
 
 }

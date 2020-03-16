@@ -6,8 +6,6 @@
 # include "rviz/tool.h"
 #endif
 
-#include <geometry_msgs/PoseStamped.h>
-
 namespace rviz
 {
 
@@ -21,8 +19,6 @@ public:
 
   virtual void activate();
   virtual void deactivate();
-
-  static void Publish(const std::vector<geometry_msgs::PoseStamped>& goal_path);
 };
 
 }
