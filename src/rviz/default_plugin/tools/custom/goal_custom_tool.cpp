@@ -37,7 +37,7 @@ void GoalCustomTool::SaveToFile(const std::vector<geometry_msgs::PoseStamped> &g
       file_diag.close();
     }
     else {
-      QMessageBox::information(nullptr, "record result", "Choose no valid file!");
+//      QMessageBox::information(nullptr, "record result", "Choose no valid file!");
       return;
     }
   }

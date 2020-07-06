@@ -38,12 +38,17 @@ public:
     return theta_;
   }
 
+  static const geometry_msgs::PoseStamped& GetRobotPose() {
+    return current_pose_;
+  }
+
 private:
   void ModelStatesUpdated(const gazebo_msgs::ModelStates &msg);
 
   static double x_;
   static double y_;
   static double theta_;
+  static geometry_msgs::PoseStamped current_pose_;
 
   ros::Subscriber sub_;
   ros::Publisher pub_;

@@ -1,4 +1,13 @@
-find_package(mbf_msgs)
+find_package(catkin REQUIRED COMPONENTS
+  roscpp
+  mbf_msgs
+  task_msgs
+)
+catkin_package(
+ CATKIN_DEPENDS
+ mbf_msgs
+ task_msgs
+)
 
 set(SOURCE_FILES
   axes_display.cpp
@@ -61,6 +70,12 @@ set(SOURCE_FILES
   tools/custom/publish_goal_tool.cpp
   tools/custom/generate_clean_path_tool.cpp
   tools/custom/goal_custom_tool.cpp
+  tools/custom/send_goto_task_tool.cpp
+  tools/custom/task_control_service.cpp
+  tools/custom/send_exe_path_task_tool.cpp
+  tools/custom/pause_task_tool.cpp
+  tools/custom/cancel_task_tool.cpp
+  tools/custom/resume_task_tool.cpp
   tools/initial_pose_tool.cpp
   tools/selection_tool.cpp
   tools/interaction_tool.cpp
@@ -74,7 +89,11 @@ set(SOURCE_FILES
   wrench_visual.cpp
 )
 
-include_directories(tools/custom)
+include_directories(
+        tools/custom
+        ${catkin_INCLUDE_DIRS}
+)
+
 add_library(${rviz_DEFAULT_PLUGIN_LIBRARY_TARGET_NAME} ${SOURCE_FILES})
 include(GenerateExportHeader)
 set(EXPORT_FILE_NAME ${EXPORT_HEADER_DIR}/rviz/default_plugin/${rviz_DEFAULT_PLUGIN_LIBRARY_TARGET_NAME}_export.h)

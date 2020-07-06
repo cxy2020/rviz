@@ -26,6 +26,9 @@ public:
 protected:
   virtual void onPoseSet(double x, double y, double theta);
 
+  void GenerateGoalPath(std::vector<geometry_msgs::PoseStamped>& output_goal_path,
+                        bool is_goto_start = true);
+
 private:
   std::vector<geometry_msgs::PoseStamped> goal_path_;
 };

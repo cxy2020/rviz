@@ -20,6 +20,7 @@ double SyncPosTool::x_ = 0.0;
 double SyncPosTool::y_ = 0.0;
 double SyncPosTool::theta_ = 0.0;
 bool SyncPosTool::is_synchronized_ = false;
+geometry_msgs::PoseStamped SyncPosTool::current_pose_;
 
 SyncPosTool::SyncPosTool()
 {
@@ -85,6 +86,16 @@ void SyncPosTool::ModelStatesUpdated(const gazebo_msgs::ModelStates &msg)
     is_synchronized_ = true;
     ROS_WARN("Update rviz initial pose: %.3f %.3f %.3f ", x_, y_, theta_);
   }
+
+  //Update current_pose_
+  current_pose_.header.frame_id = context_->getFixedFrame().toStdString();
+  current_pose_.header.stamp = ros::Time::now();
+  current_pose_.pose.position.x = x_;
+  current_pose_.pose.position.y = y_;
+  current_pose_.pose.position.z = msg.pose[2].position.z;
+  current_pose_.pose.orientation.x = msg.pose[2].orientation.x;
+  current_pose_.pose.orientation.y = msg.pose[2].orientation.y;
+  current_pose_.pose.orientation.z = msg.pose[2].orientation.z;
 }
 
 } // end namespace rviz

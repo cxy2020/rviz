@@ -52,6 +52,8 @@
   <depend>yaml-cpp</depend>
   <depend>opengl</depend>
   <depend>actionlib</depend>
+  <depend>mbf_msgs</depend>
+  <depend>task_msgs</depend>
 
   <exec_depend>libqt5-core</exec_depend>
   <exec_depend>libqt5-gui</exec_depend>

@@ -81,7 +81,7 @@ void PublishGoalTool::activate() {
     }
   }
   else {
-    QMessageBox::information(nullptr, "publish result", "Choose no valid file!");
+//    QMessageBox::information(nullptr, "publish result", "Choose no valid file!");
     return;
   }
 }

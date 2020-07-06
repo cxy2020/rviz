@@ -80,6 +80,10 @@ void GoalTool::MoveBaseDoneCallback(const actionlib::SimpleClientGoalState & sta
   save_file_timer_ = nh_.createTimer(ros::Duration(0.05), &GoalTool::SaveGoalPath, this, true);
 }
 
+void GoalTool::ActiveCallback()
+{
+}
+
 void GoalTool::SaveGoalPath(const ros::TimerEvent &event)
 {
   GoalCustomTool::SaveToFile(poses_to_save_, is_file_saved_);

@@ -66,6 +66,8 @@ private:
   void MoveBaseUpdate(const mbf_msgs::MoveBaseFeedbackConstPtr& move_base_feedback);
   void MoveBaseDoneCallback(const actionlib::SimpleClientGoalState & state,
                             const mbf_msgs::MoveBaseResultConstPtr & result);
+
+  void ActiveCallback();
   void SaveGoalPath(const ros::TimerEvent& event);
 
   ros::NodeHandle nh_;

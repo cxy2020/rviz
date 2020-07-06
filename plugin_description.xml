@@ -257,6 +257,31 @@
       Generate cleaning path with the parameters clicked on the ui.
     </description>
   </class>
+  <class name="rviz/SendGoto" type="rviz::SendGotoTaskTool" base_class_type="rviz::Tool">
+    <description>
+      Click on the ui and get a point. SendGotoTaskTool can send this point as the goal of a goto task.
+    </description>
+  </class>
+  <class name="rviz/SendExePath" type="rviz::SendExePathTaskTool" base_class_type="rviz::Tool">
+    <description>
+      Generate cleaning path and send ExePath task.
+    </description>
+  </class>
+  <class name="rviz/Pause" type="rviz::PauseTaskTool" base_class_type="rviz::Tool">
+    <description>
+      Pause the naviagtion task.
+    </description>
+  </class>
+  <class name="rviz/Resume" type="rviz::ResumeTaskTool" base_class_type="rviz::Tool">
+    <description>
+      Pause the naviagtion task.
+    </description>
+  </class>
+  <class name="rviz/Cancel" type="rviz::CancelTaskTool" base_class_type="rviz::Tool">
+    <description>
+      Pause the naviagtion task.
+    </description>
+  </class>
   <class name="rviz/SetInitialPose" type="rviz::InitialPoseTool" base_class_type="rviz::Tool">
     <description>
       Publish an initial pose for the robot.  After one use, reverts to default tool.

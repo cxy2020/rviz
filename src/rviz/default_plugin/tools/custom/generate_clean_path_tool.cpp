@@ -45,6 +45,29 @@ void GenerateCleanPathTool::deactivate()
 {
   PoseTool::deactivate();
 
+  std::vector<geometry_msgs::PoseStamped> goal_path_to_send;
+  GenerateGoalPath(goal_path_to_send);
+  GoalCustomTool::SaveToFile(goal_path_to_send);
+  GoalCustomTool::Publish(goal_path_to_send);
+}
+
+void GenerateCleanPathTool::onPoseSet(double x, double y, double theta)
+{
+  std::string fixed_frame = context_->getFixedFrame().toStdString();
+  tf::Quaternion quat;
+  quat.setRPY(0.0, 0.0, theta);
+  tf::Stamped<tf::Pose> p = tf::Stamped<tf::Pose>(tf::Pose(quat, tf::Point(x, y, 0.0)), ros::Time::now(), fixed_frame);
+  geometry_msgs::PoseStamped goal;
+  tf::poseStampedTFToMsg(p, goal);
+  ROS_INFO("Saving goal: Frame:%s, Position(%.3f, %.3f, %.3f), Orientation(%.3f, %.3f, %.3f, %.3f) = Angle: %.3f\n", fixed_frame.c_str(),
+      goal.pose.position.x, goal.pose.position.y, goal.pose.position.z,
+      goal.pose.orientation.x, goal.pose.orientation.y, goal.pose.orientation.z, goal.pose.orientation.w, theta);
+  goal_path_.push_back(goal);
+}
+
+void GenerateCleanPathTool::GenerateGoalPath(
+    std::vector<geometry_msgs::PoseStamped>& output_goal_path, bool is_goto_start)
+{
   QString message_title = "Generate Tool";
   const int kExpectPointNumber = 2;
   const std::vector<geometry_msgs::PoseStamped>& goal_path = goal_path_;
@@ -101,11 +124,12 @@ void GenerateCleanPathTool::deactivate()
   Float max_c = private_nh.param("/rviz/max_c", 10.0);
 
   Float path_precision = 0.05;
-  std::vector<geometry_msgs::PoseStamped> goal_path_to_send;
 
-  Vec2 point0(SyncPosTool::x(), SyncPosTool::y());
-  traj_tools::Line first_line(point0, point[0]);
-  GoalCustomTool::GetPathPoint(first_line, path_precision, goal_path[0].header, goal_path_to_send);
+  if (is_goto_start) {
+    Vec2 point0(SyncPosTool::x(), SyncPosTool::y());
+    traj_tools::Line first_line(point0, point[0]);
+    GoalCustomTool::GetPathPoint(first_line, path_precision, goal_path[0].header, output_goal_path);
+  }
 
   while (point_index < point_number - 2) {
     point[point_index] = Vec2(point[point_index - 1].x() + dx, point[point_index - 1].y());
@@ -125,8 +149,8 @@ void GenerateCleanPathTool::deactivate()
     traj_tools::CompositeClothoid clothoid(point[point_index], theta_start, 0.0,
           point[point_index + 1].x(), point[point_index + 1].y(), theta_end, dir_end_x3, dir_end_y3, max_k, max_c, max_yaw);
 
-    GoalCustomTool::GetPathPoint(line, path_precision, goal_path[0].header, goal_path_to_send);
-    GoalCustomTool::GetPathPoint(clothoid, path_precision, goal_path[0].header, goal_path_to_send);
+    GoalCustomTool::GetPathPoint(line, path_precision, goal_path[0].header, output_goal_path);
+    GoalCustomTool::GetPathPoint(clothoid, path_precision, goal_path[0].header, output_goal_path);
 
     dx = -dx;
     point_index += 2;
@@ -136,26 +160,8 @@ void GenerateCleanPathTool::deactivate()
 
   //Add last line path
   traj_tools::Line last_line(point[point_number - 2], point[point_number - 1]);
-  GoalCustomTool::GetPathPoint(last_line, path_precision, goal_path[0].header, goal_path_to_send);
-
-  GoalCustomTool::SaveToFile(goal_path_to_send);
-  GoalCustomTool::Publish(goal_path_to_send);
-
+  GoalCustomTool::GetPathPoint(last_line, path_precision, goal_path[0].header, output_goal_path);
   goal_path_.clear();
-}
-
-void GenerateCleanPathTool::onPoseSet(double x, double y, double theta)
-{
-  std::string fixed_frame = context_->getFixedFrame().toStdString();
-  tf::Quaternion quat;
-  quat.setRPY(0.0, 0.0, theta);
-  tf::Stamped<tf::Pose> p = tf::Stamped<tf::Pose>(tf::Pose(quat, tf::Point(x, y, 0.0)), ros::Time::now(), fixed_frame);
-  geometry_msgs::PoseStamped goal;
-  tf::poseStampedTFToMsg(p, goal);
-  ROS_INFO("Saving goal: Frame:%s, Position(%.3f, %.3f, %.3f), Orientation(%.3f, %.3f, %.3f, %.3f) = Angle: %.3f\n", fixed_frame.c_str(),
-      goal.pose.position.x, goal.pose.position.y, goal.pose.position.z,
-      goal.pose.orientation.x, goal.pose.orientation.y, goal.pose.orientation.z, goal.pose.orientation.w, theta);
-  goal_path_.push_back(goal);
 }
 }   //namespace rviz
 
