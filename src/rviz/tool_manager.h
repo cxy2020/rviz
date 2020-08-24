@@ -140,10 +140,6 @@ Q_SIGNALS:
   /** @brief Emitted by addTool() after the tool is added to the list of tools. */
   void toolAdded(Tool*);
 
-  /** @brief Emitted by setCurrentTool() after the newly chosen tool
-   * is activated. */
-  void toolChanged(Tool*);
-
   void toolRemoved(Tool*);
 
   /** @brief Emitted by refreshTool() to gedraw the tool's icon in the toolbar'. */

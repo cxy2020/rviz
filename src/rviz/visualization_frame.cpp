@@ -358,7 +358,6 @@ void VisualizationFrame::initialize(const QString& display_config_file)
   connect(tool_man, SIGNAL(toolAdded(Tool*)), this, SLOT(addTool(Tool*)));
   connect(tool_man, SIGNAL(toolRemoved(Tool*)), this, SLOT(removeTool(Tool*)));
   connect(tool_man, SIGNAL(toolRefreshed(Tool*)), this, SLOT(refreshTool(Tool*)));
-  connect(tool_man, SIGNAL(toolChanged(Tool*)), this, SLOT(indicateToolIsCurrent(Tool*)));
 
   manager_->initialize();
 
@@ -1182,6 +1181,7 @@ void VisualizationFrame::addTool(Tool* tool)
   action->setCheckable(true);
   toolbar_->insertAction(add_tool_action_, action);
   action_to_tool_map_[action] = tool;
+  action_to_checked_map_[action] = false;
   tool_to_action_map_[tool] = action;
 
   remove_tool_menu_->addAction(tool->getName());
@@ -1193,6 +1193,17 @@ void VisualizationFrame::onToolbarActionTriggered(QAction* action)
 
   if (tool)
   {
+    bool is_checked = !action_to_checked_map_[action];
+    action_to_checked_map_[action] = is_checked;
+    action->setChecked(is_checked);
+    if (is_checked)
+    {
+      tool->activate();
+    }
+    else
+    {
+      tool->deactivate();
+    }
     manager_->getToolManager()->setCurrentTool(tool);
   }
 }
@@ -1226,6 +1237,7 @@ void VisualizationFrame::removeTool(Tool* tool)
     toolbar_->removeAction(action);
     tool_to_action_map_.erase(tool);
     action_to_tool_map_.erase(action);
+    action_to_checked_map_.erase(action);
   }
   QString tool_name = tool->getName();
   QList<QAction*> remove_tool_actions = remove_tool_menu_->actions();
@@ -1245,15 +1257,6 @@ void VisualizationFrame::refreshTool(Tool* tool)
   QAction* action = tool_to_action_map_[tool];
   action->setIcon(tool->getIcon());
   action->setIconText(tool->getName());
-}
-
-void VisualizationFrame::indicateToolIsCurrent(Tool* tool)
-{
-  QAction* action = tool_to_action_map_[tool];
-  if (action)
-  {
-    action->setChecked(true);
-  }
 }
 
 void VisualizationFrame::showHelpPanel()

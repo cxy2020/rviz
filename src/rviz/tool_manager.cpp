@@ -171,19 +171,7 @@ void ToolManager::handleChar(QKeyEvent* event, RenderPanel* panel)
 
 void ToolManager::setCurrentTool(Tool* tool)
 {
-  if (current_tool_)
-  {
-    current_tool_->deactivate();
-  }
-
   current_tool_ = tool;
-
-  if (current_tool_)
-  {
-    current_tool_->activate();
-  }
-
-  Q_EMIT toolChanged(current_tool_);
 }
 
 void ToolManager::setDefaultTool(Tool* tool)
