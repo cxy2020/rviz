@@ -254,6 +254,13 @@
     </description>
   </class>
 
+  <!--Custome tools plugin for task controller.-->
+  <class name="custom_tools/GenerateRectanglePathTool" type="rock::custom_tools::GenerateRectanglePathTool" base_class_type="rviz::Tool">
+    <description>
+      Plugin for generating cleaning path in the rectangle selected with UI.
+    </description>
+  </class>
+
   <class name="rviz/Orbit" type="rviz::OrbitViewController" base_class_type="rviz::ViewController">
     <description>
       Makes it easy to move around a given point in space, looking at it from any angle.

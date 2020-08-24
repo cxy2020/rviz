@@ -1,3 +1,10 @@
+find_package(catkin REQUIRED COMPONENTS
+  roscpp
+  nav_tools
+)
+
+find_library(NAV_TOOLS_LIB nav_tools)
+
 set(SOURCE_FILES
   axes_display.cpp
   camera_display.cpp
@@ -66,8 +73,19 @@ set(SOURCE_FILES
   view_controllers/frame_view_controller.cpp
   wrench_display.cpp
   wrench_visual.cpp
+
+  # The custom tools for task_controller.
+  custom_tools/generate_rectangle_path_tool.cpp
+  custom_tools/pause_start_tool.cpp
+  custom_tools/send_goto_tool.cpp
+  custom_tools/send_path_tool.cpp
+  custom_tools/stop_tool.cpp
+  custom_tools/zone_selection_tool.cpp
 )
 
+include_directories(
+  ${catkin_INCLUDE_DIRS}
+)
 add_library(${rviz_DEFAULT_PLUGIN_LIBRARY_TARGET_NAME} ${SOURCE_FILES})
 include(GenerateExportHeader)
 set(EXPORT_FILE_NAME ${EXPORT_HEADER_DIR}/rviz/default_plugin/${rviz_DEFAULT_PLUGIN_LIBRARY_TARGET_NAME}_export.h)
@@ -82,6 +100,7 @@ target_link_libraries(${rviz_DEFAULT_PLUGIN_LIBRARY_TARGET_NAME}
   ${catkin_LIBRARIES}
   ${OGRE_OV_LIBRARIES_ABS}
   ${QT_LIBRARIES}
+  ${NAV_TOOLS_LIB}
 )
 
 #catkin_lint: ignore_once external_file
