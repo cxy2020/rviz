@@ -255,9 +255,24 @@
   </class>
 
   <!--Custome tools plugin for task controller.-->
-  <class name="custom_tools/GenerateRectanglePathTool" type="rock::custom_tools::GenerateRectanglePathTool" base_class_type="rviz::Tool">
+  <class name="custom_tools/EditPath" type="rock::custom_tools::PathEditTool" base_class_type="rviz::Tool">
     <description>
-      Plugin for generating cleaning path in the rectangle selected with UI.
+      Plugin for editing cleaning path in the rectangle selected with UI.
+    </description>
+  </class>
+  <class name="custom_tools/ControlTask" type="rock::custom_tools::TaskControlTool" base_class_type="rviz::Tool">
+    <description>
+      Plugin for navigation task control.
+    </description>
+  </class>
+  <class name="custom_tools/GotoTask" type="rock::custom_tools::SendGotoTool" base_class_type="rviz::Tool">
+    <description>
+      Plugin for sending goto task.
+    </description>
+  </class>
+  <class name="custom_tools/ReLocate" type="rock::custom_tools::ReLocateTool" base_class_type="rviz::Tool">
+    <description>
+      Plugin for relocate the robot from realtime robot pose.
     </description>
   </class>
 

@@ -34,6 +34,7 @@
 int main(int argc, char** argv)
 {
   QApplication qapp(argc, argv);
+  ros::init(argc, argv, "rviz");
 
   rviz::VisualizerApp vapp;
   vapp.setApp(&qapp);

@@ -31,8 +31,7 @@
 #include <eigen3/Eigen/Dense>
 
 #include "rviz/tool.h"
-#include "rviz/selection/forwards.h"
-#include "nav_tools/common/base_data_type.h"
+#include "rviz/default_plugin/custom_tools/zone.h"
 
 namespace Ogre {
 class Viewport;
@@ -44,19 +43,6 @@ class MoveTool;
 
 namespace rock {
 namespace custom_tools {
-
-/**
- * @struct Zone
- * @brief The struct containing geometry information of zone.
- */
-struct Zone {
-  //The first vertex of the rectangle
-  Vec2f start;
-  //The vector starting from the first vertex and ending at the second vertex.
-  Vec2f v1;
-  //The vector starting from the second vertex and ending at the third vertex.
-  Vec2f v2;
-};
 
 /**
  * @class ZoneSelectionTool
@@ -78,9 +64,9 @@ public:
 
   void update(float wall_dt, float ros_dt) override;
 
-  Zone getSelectedZone() const;
+  bool getSelectedRectangle(Rectangle& rectangle) const;
 
-private:
+protected:
   /**
    * @enum SelectStage
    * @brief The stages of selection.
@@ -91,18 +77,50 @@ private:
     SELECTED
   };
 
-  inline bool transform_to_map(rviz::ViewportMouseEvent& event, rFloat& x, rFloat& y);
+  /**
+   * @brief Transform the coordinates of the mouse event to those on the map.
+   * @param event The mouse event containt the coordinates.
+   * @param event_point The point from the view port event
+   * @param map_point the output point on the map.
+   * @return Return true if the coordinate is valid; return false otherwise.
+   */
+  static bool transform_to_map(rviz::ViewportMouseEvent& event,
+                               int event_point[2],
+                               Vec2f& map_point);
+
+  /**
+   * @brief Calculate the vertexes of rectangle according to the selected points on the diagonal of
+   *  the rectangle in the mouse event.
+   * @param event The mouse event.
+   * @param vertex_0 The first vertex of the diagonal in the mouse event.
+   * @param vertex_2 The second vertex of the diagonal in the mouse event.
+   * @param is_clock_wise Indicates the generated rectangle is clockwise or not.
+   * @param map_vertexes The output vertexes of the rectangle
+   */
+  static void calculate_map_vertexes(rviz::ViewportMouseEvent& event,
+                                     int vertex_0[2],
+                                     int vertex_2[2],
+                                     bool is_clock_wise,
+                                     Vec2f map_vertexes[4]);
 
   rviz::MoveTool* move_tool_;
-
   SelectStage select_stage_;
-  int sel_start_x_;
-  int sel_start_y_;
-  int sel_end_x_;
-  int sel_end_y_;
+  int sel_start_[2];
   bool is_clockwise_;
-  Vec2f start_;
-  Vec2f end_;
+  Vec2f vertexes_[4];
+
+private:
+  static void calculate_vertexes(int vertex_0[2], int vertex_2[2],
+                                 bool is_clock_wise, int vertex_1[2], int vertex_3[2]);
+
+  /**
+   * @brief Given the neighbour points A, B, C to form the rectangle, adjust the second point B to
+   *  make BA perpendicular to BC.
+   * @param A The first point to form the rectangle.
+   * @param C The second point to form the rectangle.
+   * @param B The third point to form the rectangle and to be adjusted.
+   */
+  static void adjust_vertex(const Vec2f& A, const Vec2f& C, Vec2f& B);
 };
 
 }   //namespace custom_tools

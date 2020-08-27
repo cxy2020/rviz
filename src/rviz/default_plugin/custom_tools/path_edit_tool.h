@@ -21,21 +21,33 @@
  **************************************************************************************************/
 
 /**
- * @file send_path_tool.h
+ * @file generate_path_tool.h
  * @author Xiaoying Chen
  */
 
 #pragma once
 
+#include <boost/shared_ptr.hpp>
+
+#include "rviz/default_plugin/custom_tools/multi_zone_selection_tool.h"
+
 namespace rock {
 namespace custom_tools {
 
 /**
- * @class SendPathTool
- * @brief The tool button to send cleaning paths as task to task_controller.
+ * @class PathEditTool
+ * @brief Plugin for generating, deleting, sending and saving path.
  */
-class SendPathTool {
+class PathEditTool : public MultiZoneSelectionTool {
+public:
+  PathEditTool();
 
+  int processMouseEvent(rviz::ViewportMouseEvent& event) override;
+
+  int processKeyEvent(QKeyEvent* event, rviz::RenderPanel* panel) override;
+
+private:
+  bool is_operation_key_pressed_;
 };
 
 }   //namespace custom_tools

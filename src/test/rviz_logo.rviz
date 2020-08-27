@@ -343,6 +343,7 @@ Visualization Manager:
     - Class: rviz/SetInitialPose
       Topic: initialpose
     - Class: rviz/SetGoal
+    - Class custom_tools/EditPath
       Topic: /move_base_simple/goal
   Views:
     Current:

@@ -21,31 +21,39 @@
  **************************************************************************************************/
 
 /**
- * @file send_goto_tool.h
+ * @file task_control_tool.h
  * @author Xiaoying Chen
  */
 
 #pragma once
 
-#include "rviz/default_plugin/tools/pose_tool.h"
+#include <ros/ros.h>
+
+#include "rviz/tool.h"
 
 namespace rock {
 namespace custom_tools {
 
 /**
- * @class SendGotoTool
- * @brief The tool button to send goal of "goto" path to task_controller.
+ * @class TaskControlTool
+ * @brief Plugin for navigation task control, including pausing/resuming the task, canceling the
+ *  task, and reset the task_controller form exception.
  */
-class SendGotoTool : public rviz::PoseTool {
+class TaskControlTool : public rviz::Tool {
 public:
-  SendGotoTool();
+  TaskControlTool();
 
-protected:
-  void onPoseSet(double x, double y, double theta) override;
+  void activate() override {}
+
+  void deactivate() override {}
+
+  int processKeyEvent(QKeyEvent* event, rviz::RenderPanel* panel) override;
 
 private:
-  ros::NodeHandle nh_;
-  ros::ServiceClient set_task_client_;
+  ros::ServiceClient start_task_client_;
+  ros::ServiceClient pause_task_client_;
+  ros::ServiceClient emergency_stop_client_;
+  ros::ServiceClient cancel_task_client_;
 };
 
 }   //namespace custom_tools

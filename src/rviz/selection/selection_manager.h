@@ -105,6 +105,7 @@ public:
 
   // control the highlight box being displayed while selecting
   void highlight(Ogre::Viewport* viewport, int x1, int y1, int x2, int y2);
+  void addHighlight(Ogre::Viewport* viewport, int x1, int y1, int x2, int y2);
   void removeHighlight();
 
   // select all objects in bounding box
@@ -246,13 +247,30 @@ private Q_SLOTS:
   void updateProperties();
 
 private:
+  /**
+   * @struct HighlightRectangleCreator
+   * @brief Struct for creating HighlightRectangle object.
+   */
+  struct HighlightRectangleCreator {
+  public:
+    HighlightRectangleCreator() {}
+
+    HighlightRectangleCreator(Ogre::MaterialPtr material, const Ogre::AxisAlignedBox& aabInf);
+
+    Ogre::Rectangle2D* Create() const;
+
+  private:
+    Ogre::MaterialPtr material_;
+    Ogre::AxisAlignedBox aabInf_;
+  };
+
   void selectionAdded(const M_Picked& added);
   void selectionRemoved(const M_Picked& removed);
 
   std::pair<Picked, bool> addSelectedObject(const Picked& obj);
   void removeSelectedObject(const Picked& obj);
 
-  void setHighlightRect(Ogre::Viewport* viewport, int x1, int y1, int x2, int y2);
+  void setHighlightRect(Ogre::Viewport* viewport, unsigned long index, int x1, int y1, int x2, int y2);
 
   /** Render to a texture for one of the picking passes and unpack the resulting pixels. */
   void renderAndUnpack(Ogre::Viewport* viewport,
@@ -298,7 +316,7 @@ private:
     int y2;
     Ogre::Viewport* viewport;
   };
-  Highlight highlight_;
+  std::vector<Highlight> highlights_;
 
   M_Picked selection_;
 
@@ -315,7 +333,7 @@ private:
 
   uint32_t uid_counter_;
 
-  Ogre::Rectangle2D* highlight_rectangle_;
+  std::vector<Ogre::Rectangle2D*> highlight_rectangles_;
   Ogre::SceneNode* highlight_node_;
   Ogre::Camera* camera_;
 
@@ -339,6 +357,7 @@ private:
 
   typedef std::map<std::string, ros::Publisher> PublisherMap;
   PublisherMap debug_publishers_;
+  HighlightRectangleCreator highlight_rectangle_creator_;
 };
 
 } // namespace rviz

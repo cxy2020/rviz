@@ -100,7 +100,11 @@ SelectionManager::~SelectionManager()
   setSelection(M_Picked());
 
   highlight_node_->getParentSceneNode()->removeAndDestroyChild(highlight_node_->getName());
-  delete highlight_rectangle_;
+
+  for (std::vector<Ogre::Rectangle2D*>::iterator i = highlight_rectangles_.begin();
+       i != highlight_rectangles_.end(); ++i) {
+    delete *i;
+  }
 
   for (uint32_t i = 0; i < s_num_render_textures_; ++i)
   {
@@ -129,34 +133,34 @@ void SelectionManager::initialize()
 
   std::stringstream ss;
   static int count = 0;
-  ss << "SelectionRect" << count++;
-  highlight_rectangle_ = new Ogre::Rectangle2D(true);
+  for (int i = 0; i < 5; ++i) {
+    ss << "SelectionRect" << count++;
+    const static uint32_t texture_data[1] = {0xffff0080};
+    Ogre::DataStreamPtr pixel_stream;
+    pixel_stream.bind(new Ogre::MemoryDataStream((void*)&texture_data[0], 4));
 
-  const static uint32_t texture_data[1] = {0xffff0080};
-  Ogre::DataStreamPtr pixel_stream;
-  pixel_stream.bind(new Ogre::MemoryDataStream((void*)&texture_data[0], 4));
+    Ogre::TexturePtr tex = Ogre::TextureManager::getSingleton().loadRawData(
+        ss.str() + "Texture", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, pixel_stream, 1, 1,
+        Ogre::PF_R8G8B8A8, Ogre::TEX_TYPE_2D, 0);
 
-  Ogre::TexturePtr tex = Ogre::TextureManager::getSingleton().loadRawData(
-      ss.str() + "Texture", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, pixel_stream, 1, 1,
-      Ogre::PF_R8G8B8A8, Ogre::TEX_TYPE_2D, 0);
+    Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().create(
+        ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+    material->setLightingEnabled(false);
+    // material->getTechnique(0)->getPass(0)->setPolygonMode(Ogre::PM_WIREFRAME);
+    Ogre::AxisAlignedBox aabInf;
+    aabInf.setInfinite();
+    highlight_rectangle_creator_ = HighlightRectangleCreator(material, aabInf);
+    material->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
+    material->setCullingMode(Ogre::CULL_NONE);
 
-  Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().create(
-      ss.str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-  material->setLightingEnabled(false);
-  // material->getTechnique(0)->getPass(0)->setPolygonMode(Ogre::PM_WIREFRAME);
-  highlight_rectangle_->setMaterial(material->getName());
-  Ogre::AxisAlignedBox aabInf;
-  aabInf.setInfinite();
-  highlight_rectangle_->setBoundingBox(aabInf);
-  highlight_rectangle_->setRenderQueueGroup(Ogre::RENDER_QUEUE_OVERLAY - 1);
-  material->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
-  material->setCullingMode(Ogre::CULL_NONE);
+    Ogre::Rectangle2D* highlight_rectangle = highlight_rectangle_creator_.Create();
+    highlight_rectangles_.emplace_back(highlight_rectangle);
+    highlight_node_->attachObject(highlight_rectangle);
 
-  Ogre::TextureUnitState* tex_unit = material->getTechnique(0)->getPass(0)->createTextureUnitState();
-  tex_unit->setTextureName(tex->getName());
-  tex_unit->setTextureFiltering(Ogre::TFO_NONE);
-
-  highlight_node_->attachObject(highlight_rectangle_);
+    Ogre::TextureUnitState* tex_unit = material->getTechnique(0)->getPass(0)->createTextureUnitState();
+    tex_unit->setTextureName(tex->getName());
+    tex_unit->setTextureFiltering(Ogre::TFO_NONE);
+  }
 
   // create picking camera
   camera_ = scene_manager->createCamera(ss.str() + "_camera");
@@ -503,14 +507,24 @@ void SelectionManager::update()
 
   highlight_node_->setVisible(highlight_enabled_);
 
+  for (std::vector<Ogre::Rectangle2D*>::iterator i = highlight_rectangles_.begin();
+       i != highlight_rectangles_.end(); ++i) {
+    (*i)->setCorners(0.0, 0.0, 0.0, 0.0);
+  }
+
   if (highlight_enabled_)
   {
-    setHighlightRect(highlight_.viewport, highlight_.x1, highlight_.y1, highlight_.x2, highlight_.y2);
+    for (int i = 0; i < highlights_.size(); ++i) {
+      setHighlightRect(highlights_[i].viewport, i, highlights_[i].x1, highlights_[i].y1,
+                       highlights_[i].x2, highlights_[i].y2);
+    }
 
 #if 0
     M_Picked results;
     highlight_node_->setVisible(false);
-    pick(highlight_.viewport, highlight_.x1, highlight_.y1, highlight_.x2, highlight_.y2, results);
+    for (std::vector<Highlight>::const_iterator i = highlights_.begin(); i != highlights_.end(); ++i) {
+      pick(i->viewport, i->x1, i->y1, i->x2, i->y2, results);
+    }
     highlight_node_->setVisible(true);
 #endif
   }
@@ -522,17 +536,41 @@ void SelectionManager::highlight(Ogre::Viewport* viewport, int x1, int y1, int x
 
   highlight_enabled_ = true;
 
-  highlight_.viewport = viewport;
-  highlight_.x1 = x1;
-  highlight_.y1 = y1;
-  highlight_.x2 = x2;
-  highlight_.y2 = y2;
+  if (highlights_.empty()) {
+    Highlight highlight;
+    highlight.viewport = viewport;
+    highlight.x1 = x1;
+    highlight.y1 = y1;
+    highlight.x2 = x2;
+    highlight.y2 = y2;
+    highlights_.emplace_back(highlight);
+  }
+  else {
+    Highlight& highlight = highlights_.back();
+    highlight.viewport = viewport;
+    highlight.x1 = x1;
+    highlight.y1 = y1;
+    highlight.x2 = x2;
+    highlight.y2 = y2;
+  }
+}
+
+void SelectionManager::addHighlight(Ogre::Viewport* viewport, int x1, int y1, int x2, int y2) {
+  boost::recursive_mutex::scoped_lock lock(global_mutex_);
+  highlight_enabled_ = true;
+  Highlight highlight;
+  highlight.viewport = viewport;
+  highlight.x1 = x1;
+  highlight.y1 = y1;
+  highlight.x2 = x2;
+  highlight.y2 = y2;
+  highlights_.emplace_back(highlight);
 }
 
 void SelectionManager::removeHighlight()
 {
   boost::recursive_mutex::scoped_lock lock(global_mutex_);
-
+  highlights_.clear();
   highlight_enabled_ = false;
 }
 
@@ -560,7 +598,7 @@ void SelectionManager::select(Ogre::Viewport* viewport, int x1, int y1, int x2, 
   }
 }
 
-void SelectionManager::setHighlightRect(Ogre::Viewport* viewport, int x1, int y1, int x2, int y2)
+void SelectionManager::setHighlightRect(Ogre::Viewport* viewport, unsigned long index, int x1, int y1, int x2, int y2)
 {
   float nx1 = ((float)x1 / viewport->getActualWidth()) * 2 - 1;
   float nx2 = ((float)x2 / viewport->getActualWidth()) * 2 - 1;
@@ -572,7 +610,14 @@ void SelectionManager::setHighlightRect(Ogre::Viewport* viewport, int x1, int y1
   nx2 = nx2 < -1 ? -1 : (nx2 > 1 ? 1 : nx2);
   ny2 = ny2 < -1 ? -1 : (ny2 > 1 ? 1 : ny2);
 
-  highlight_rectangle_->setCorners(nx1, ny1, nx2, ny2);
+  if (highlight_rectangles_.size() > index) {
+    highlight_rectangles_[index]->setCorners(nx1, ny1, nx2, ny2);
+  }
+  else {
+    Ogre::Rectangle2D* highlight_rectangle = highlight_rectangle_creator_.Create();
+    highlight_rectangles_.emplace_back(highlight_rectangle);
+    highlight_node_->attachObject(highlight_rectangle);
+  }
 }
 
 void SelectionManager::unpackColors(Ogre::PixelBox& box, V_CollObject& pixels)
@@ -1363,6 +1408,18 @@ void SelectionManager::updateProperties()
 
     handler->updateProperties();
   }
+}
+
+SelectionManager::HighlightRectangleCreator::HighlightRectangleCreator(
+    Ogre::MaterialPtr material, const Ogre::AxisAlignedBox& aabInf) :
+  material_(material), aabInf_(aabInf) {}
+
+Ogre::Rectangle2D* SelectionManager::HighlightRectangleCreator::Create() const {
+  Ogre::Rectangle2D* highlight_rectangle = new Ogre::Rectangle2D(true);
+  highlight_rectangle->setMaterial(material_->getName());
+  highlight_rectangle->setBoundingBox(aabInf_);
+  highlight_rectangle->setRenderQueueGroup(Ogre::RENDER_QUEUE_OVERLAY - 1);
+  return highlight_rectangle;
 }
 
 

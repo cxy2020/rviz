@@ -1,0 +1,10 @@
+# The latitude spacing between two paths.
+path_latitude_spacing: 0.6
+# The spacing bwtween the end of the path and the rectangle zone.
+path_longitude_spacing: 0.5
+# The max ditance error of the cleaning path.
+max_distance_error: 0.05
+# The max angle error of the cleaning path.
+max_angle_error: 0.05
+# The file to save the generated path.
+default_file_dir: time_log

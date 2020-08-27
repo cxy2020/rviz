@@ -21,21 +21,48 @@
  **************************************************************************************************/
 
 /**
- * @file pause_start_tool.h
+ * @file send_goto_tool.h
  * @author Xiaoying Chen
  */
 
 #pragma once
 
+#include <ros/ros.h>
+#include <geometry_msgs/PoseStamped.h>
+#include <gazebo_msgs/ModelStates.h>
+
+#include "rviz/tool.h"
+
+namespace rviz {
+class FloatProperty;
+}
+
 namespace rock {
 namespace custom_tools {
 
 /**
- * @class PauseStartTool
- * @brief The tool button to send "Pause" or "Start" command to task_controller.
+ * @class ReLocateTool
+ * @brief The tool to relocate the robot from realtime robot pose.
  */
-class PauseStartTool {
+class ReLocateTool : public rviz::Tool {
+public:
+  ReLocateTool();
 
+  virtual void activate();
+
+  virtual void deactivate() {}
+
+private:
+  void OnPoseUpdated(const gazebo_msgs::ModelStates &msg);
+
+  geometry_msgs::PoseStamped current_pose_;
+  bool is_updated_;
+  rviz::FloatProperty* std_dev_x_;
+  rviz::FloatProperty* std_dev_y_;
+  rviz::FloatProperty* std_dev_theta_;
+
+  ros::Publisher location_pub_;
+  ros::Subscriber pose_sub_;
 };
 
 }   //namespace custom_tools

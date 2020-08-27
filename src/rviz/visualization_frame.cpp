@@ -1198,13 +1198,28 @@ void VisualizationFrame::onToolbarActionTriggered(QAction* action)
     action->setChecked(is_checked);
     if (is_checked)
     {
+      //Deactivate other tools except the current one.
+      for (std::map<Tool*, QAction*>::iterator i = tool_to_action_map_.begin();
+           i != tool_to_action_map_.end(); ++i)
+      {
+        if (i->first != tool) {
+          i->first->deactivate();
+          i->second->setChecked(false);
+          action_to_checked_map_[i->second] = false;
+        }
+      }
       tool->activate();
+      manager_->getToolManager()->setCurrentTool(tool);
     }
     else
     {
       tool->deactivate();
+      Tool* current_tool = manager_->getToolManager()->getDefaultTool();
+      manager_->getToolManager()->setCurrentTool(current_tool);
+      QAction* action = tool_to_action_map_[current_tool];
+      action->setChecked(true);
+      action_to_checked_map_[action] = true;
     }
-    manager_->getToolManager()->setCurrentTool(tool);
   }
 }
 

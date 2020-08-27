@@ -75,12 +75,13 @@ set(SOURCE_FILES
   wrench_visual.cpp
 
   # The custom tools for task_controller.
-  custom_tools/generate_rectangle_path_tool.cpp
-  custom_tools/pause_start_tool.cpp
+  custom_tools/path_edit_tool.cpp
+  custom_tools/multi_zone_selection_tool.cpp
+  custom_tools/path_manager.cpp
   custom_tools/send_goto_tool.cpp
-  custom_tools/send_path_tool.cpp
-  custom_tools/stop_tool.cpp
   custom_tools/zone_selection_tool.cpp
+  custom_tools/task_control_tool.cpp
+  custom_tools/re_locate_tool.cpp
 )
 
 include_directories(

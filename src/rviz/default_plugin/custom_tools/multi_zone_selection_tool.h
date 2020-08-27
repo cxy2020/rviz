@@ -21,23 +21,39 @@
  **************************************************************************************************/
 
 /**
- * @file generate_rectangle_path_tool.h
+ * @file multi_zone_selection_tool.h
  * @author Xiaoying Chen
  */
 
 #pragma once
 
 #include "rviz/default_plugin/custom_tools/zone_selection_tool.h"
+#include "rviz/default_plugin/custom_tools/zone.h"
 
 namespace rock {
 namespace custom_tools {
 
 /**
- * @class GenerateRectanglePathTool
- * @brief Plugin for generating cleaning path in the rectangle selected with UI.
+ * @class MultiZoneSelectionTool
+ * @brief The tool for selecting multiple zones. The zone selection starts with the tool button
+ *  checked. The user can select multiple zones by pressing and moving the left mouse. When the
+ *  selection is finished, the user can clicked on the tool button to deactivate it. If The user
+ *  clicks on the empty space, the selection will be canceled and all the selection zones are cleared.
  */
-class GenerateRectanglePathTool : public ZoneSelectionTool {
+class MultiZoneSelectionTool : public ZoneSelectionTool {
+public:
+  MultiZoneSelectionTool();
 
+  void activate() override;
+  void deactivate() override;
+
+  int processMouseEvent(rviz::ViewportMouseEvent& event) override;
+
+  void update(float wall_dt, float ros_dt) override;
+
+private:
+  inline void clear_selected();
+  std::vector<Rectangle> zones_;
 };
 
 }   //namespace custom_tools

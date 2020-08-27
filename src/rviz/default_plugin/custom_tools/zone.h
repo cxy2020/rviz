@@ -21,22 +21,66 @@
  **************************************************************************************************/
 
 /**
- * @file stop_tool.h
+ * @file zone.h
  * @author Xiaoying Chen
  */
 
 #pragma once
 
+#include <vector>
+#include <eigen3/Eigen/Dense>
+#include <boost/shared_ptr.hpp>
+
+#include "nav_tools/common/base_data_type.h"
+#include "nav_tools/path/global_point_2d.h"
+
 namespace rock {
 namespace custom_tools {
 
 /**
- * @class StopTool
- * @brief The tool button to send "Stop" to task_controller, making the task_controller cancel and
- *  stop the robot moving.
+ * @struct Rectangle
+ * @brief The struct containing geometry information of rectangle zone.
  */
-class StopTool {
+struct Rectangle {
+  //The 4 vertex of the rectangle
+  Vec2f vertexes[4];
+  //The vector starting from the first vertex and ending at the second vertex.
+  Vec2f v1;
+  //The vector starting from the second vertex and ending at the third vertex.
+  Vec2f v2;
 
+  inline bool is_inside(const Vec2f& point) const {
+    Vec2f vec1 = point - vertexes[0];
+    if (vec1.dot(v2) < 0.0)
+      return false;
+    if (vec1.dot(v1) < 0.0)
+      return false;
+    vec1 = point - vertexes[2];
+    if (vec1.dot(v1) > 0.0)
+      return false;
+    if (vec1.dot(v2) > 0.0)
+      return false;
+    return true;
+  }
+
+  inline bool is_intersect(const Rectangle& rectangle) const {
+    for (int i = 0; i < 4; ++i) {
+      if (is_inside(rectangle.vertexes[i]))
+        return true;
+      if (rectangle.is_inside(vertexes[i]))
+        return true;
+    }
+    return false;
+  }
+};
+
+/**
+ * @struct GeneratedPath
+ * @brief The struct containing path generated with UI.
+ */
+struct GeneratedPath {
+  std::vector<nav_tools::GlobalPoint2d> path;
+  Rectangle rectangle;
 };
 
 }   //namespace custom_tools
