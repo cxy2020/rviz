@@ -30,6 +30,7 @@
 #include <boost/shared_ptr.hpp>
 
 #include "rviz/default_plugin/custom_tools/multi_zone_selection_tool.h"
+#include "rviz/default_plugin/custom_tools/task_control_tool.h"
 
 namespace rock {
 namespace custom_tools {
@@ -38,7 +39,7 @@ namespace custom_tools {
  * @class PathEditTool
  * @brief Plugin for generating, deleting, sending and saving path.
  */
-class PathEditTool : public MultiZoneSelectionTool {
+class PathEditTool : public MultiZoneSelectionTool, public TaskControlTool {
 public:
   PathEditTool();
 

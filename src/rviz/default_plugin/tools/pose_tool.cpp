@@ -125,8 +125,9 @@ int PoseTool::processMouseEvent(ViewportMouseEvent& event)
 
         onPoseSet(pos_.x, pos_.y, angle);
 
-        flags |= (Finished | Render);
+        flags |= (Render);
       }
+      state_ = Position;
     }
   }
 

@@ -108,7 +108,9 @@ int PathEditTool::processKeyEvent(QKeyEvent* event, rviz::RenderPanel* panel) {
   default:
     break;
   }
-  return Render | Finished;
+
+  TaskControlTool::ProcessControlTaskEvent(event, panel);
+  return Render;
 }
 
 }   //namespace custom_tools

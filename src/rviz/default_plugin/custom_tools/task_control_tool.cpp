@@ -4,6 +4,7 @@
 #include <std_srvs/Empty.h>
 
 #include "rviz/render_panel.h"
+#include "rviz/tool.h"
 
 namespace rock {
 namespace custom_tools {
@@ -16,10 +17,10 @@ TaskControlTool::TaskControlTool() {
   emergency_stop_client_ = nh.serviceClient<std_srvs::Empty>("emergency_stop");
 }
 
-int TaskControlTool::processKeyEvent(QKeyEvent* event, rviz::RenderPanel* /*panel*/) {
+int TaskControlTool::ProcessControlTaskEvent(QKeyEvent* event, rviz::RenderPanel* /*panel*/) {
   switch (event->key()) {
   //Start the task control process.
-  case Qt::Key_S: {
+  case Qt::Key_R: {
     std_srvs::EmptyRequest req;
     std_srvs::EmptyResponse res;
     start_task_client_.call(req, res);
@@ -49,11 +50,8 @@ int TaskControlTool::processKeyEvent(QKeyEvent* event, rviz::RenderPanel* /*pane
   default:
     break;
   }
-  return Render | Finished;
+  return rviz::Tool::Render;
 }
 
 }   //namespace custom_tools
 }   //namespace rock
-
-#include <pluginlib/class_list_macros.hpp>
-PLUGINLIB_EXPORT_CLASS(rock::custom_tools::TaskControlTool, rviz::Tool)

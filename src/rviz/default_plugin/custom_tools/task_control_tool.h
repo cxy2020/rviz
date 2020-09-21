@@ -29,7 +29,11 @@
 
 #include <ros/ros.h>
 
-#include "rviz/tool.h"
+class QKeyEvent;
+
+namespace rviz {
+class RenderPanel;
+}
 
 namespace rock {
 namespace custom_tools {
@@ -39,15 +43,11 @@ namespace custom_tools {
  * @brief Plugin for navigation task control, including pausing/resuming the task, canceling the
  *  task, and reset the task_controller form exception.
  */
-class TaskControlTool : public rviz::Tool {
+class TaskControlTool {
 public:
   TaskControlTool();
 
-  void activate() override {}
-
-  void deactivate() override {}
-
-  int processKeyEvent(QKeyEvent* event, rviz::RenderPanel* panel) override;
+  int ProcessControlTaskEvent(QKeyEvent* event, rviz::RenderPanel* panel);
 
 private:
   ros::ServiceClient start_task_client_;

@@ -17,6 +17,10 @@ SendGotoTool::SendGotoTool() {
   set_task_client_ = nh.serviceClient<task_msgs::SendTaskInfo>("task_control/set_task");
 }
 
+int SendGotoTool::processKeyEvent(QKeyEvent* event, rviz::RenderPanel* panel) {
+  return TaskControlTool::ProcessControlTaskEvent(event, panel);
+}
+
 void SendGotoTool::onPoseSet(double x, double y, double theta) {
   std::string fixed_frame = context_->getFixedFrame().toStdString();
   task_msgs::SendTaskInfoRequest req;

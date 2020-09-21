@@ -28,6 +28,7 @@
 #pragma once
 
 #include "rviz/default_plugin/tools/pose_tool.h"
+#include "rviz/default_plugin/custom_tools/task_control_tool.h"
 
 namespace rock {
 namespace custom_tools {
@@ -36,9 +37,11 @@ namespace custom_tools {
  * @class SendGotoTool
  * @brief The tool button to send goal of "goto" path to task_controller.
  */
-class SendGotoTool : public rviz::PoseTool {
+class SendGotoTool : public rviz::PoseTool, public TaskControlTool {
 public:
   SendGotoTool();
+
+  int processKeyEvent(QKeyEvent* event, rviz::RenderPanel* panel) override;
 
 protected:
   void onPoseSet(double x, double y, double theta) override;

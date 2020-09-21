@@ -260,11 +260,11 @@
       Plugin for editing cleaning path in the rectangle selected with UI.
     </description>
   </class>
-  <class name="custom_tools/ControlTask" type="rock::custom_tools::TaskControlTool" base_class_type="rviz::Tool">
+<!--  <class name="custom_tools/ControlTask" type="rock::custom_tools::TaskControlTool" base_class_type="rviz::Tool">
     <description>
       Plugin for navigation task control.
     </description>
-  </class>
+  </class>-->
   <class name="custom_tools/GotoTask" type="rock::custom_tools::SendGotoTool" base_class_type="rviz::Tool">
     <description>
       Plugin for sending goto task.
