@@ -86,7 +86,7 @@ protected:
    */
   static bool transform_to_map(rviz::ViewportMouseEvent& event,
                                int event_point[2],
-                               Vec2f& map_point);
+                               V2f& map_point);
 
   /**
    * @brief Calculate the vertexes of rectangle according to the selected points on the diagonal of
@@ -101,13 +101,13 @@ protected:
                                      int vertex_0[2],
                                      int vertex_2[2],
                                      bool is_clock_wise,
-                                     Vec2f map_vertexes[4]);
+                                     V2f map_vertexes[4]);
 
   rviz::MoveTool* move_tool_;
   SelectStage select_stage_;
   int sel_start_[2];
   bool is_clockwise_;
-  Vec2f vertexes_[4];
+  V2f vertexes_[4];
 
 private:
   static void calculate_vertexes(int vertex_0[2], int vertex_2[2],
@@ -120,7 +120,7 @@ private:
    * @param C The second point to form the rectangle.
    * @param B The third point to form the rectangle and to be adjusted.
    */
-  static void adjust_vertex(const Vec2f& A, const Vec2f& C, Vec2f& B);
+  static void adjust_vertex(const V2f& A, const V2f& C, V2f& B);
 };
 
 }   //namespace custom_tools

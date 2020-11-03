@@ -22,8 +22,6 @@ namespace custom_tools {
 void PathManager::AddPath(const std::vector<boost::shared_ptr<nav_tools::AnalyticPath2d> >& paths,
                            const Rectangle& rectangle) {
   static const FitParam* fit_param = &NavigationConfig::get_instance().fit_param;
-  const rFloat max_v = NavigationConfig::get_instance().max_wheel_speed;
-  const rFloat max_w = (max_v + max_v) / fit_param->wheel_spacing();
 
   GeneratedPath generated_path;
   std::vector<LocalPoint2d> local_points;
@@ -35,7 +33,7 @@ void PathManager::AddPath(const std::vector<boost::shared_ptr<nav_tools::Analyti
   //Transform local point to global points
   for (LocalPoint2d::ConstIter i = local_points.begin(); i != local_points.end(); ++i) {
     GlobalPoint2d global_point(
-          i->coord, i->dir, i->angle, i->k, i->s, max_v, max_w,
+          i->coord, i->dir, i->angle, i->k, i->s, max_linear_speed_, max_rotation_speed_,
           max_angle_error_, max_distance_error_, square_max_distance_error_, true);
     generated_path.path.emplace_back(global_point);
   }
@@ -89,11 +87,7 @@ void PathManager::PublishPath(const std::string& frame_id) const {
   path_pub_.publish(nav_path);
 }
 
-void PathManager::SendPath(const std::string& frame_id) {
-  static const FitParam* fit_param = &NavigationConfig::get_instance().fit_param;
-  const rFloat max_v = NavigationConfig::get_instance().max_wheel_speed;
-  const rFloat max_w = (max_v + max_v) / fit_param->wheel_spacing();
-
+bool PathManager::SendPath(const std::string& frame_id) {
   task_msgs::SendTaskInfoRequest req;
   task_msgs::SendTaskInfoResponse res;
   req.path.frame_id = frame_id;
@@ -101,10 +95,12 @@ void PathManager::SendPath(const std::string& frame_id) {
   req.path.can_smooth = true;
   req.path.is_end_pose_set = false;
   req.path.is_path_reversed = false;
-  req.path.max_linear_speed = max_v;
-  req.path.max_rotation_speed = max_w;
-  req.path.max_angular_error = max_angle_error_;
-  req.path.max_distance_error = max_distance_error_;
+  if (!generated_paths_.empty() && !generated_paths_.front().path.empty()) {
+    req.path.max_linear_speed = static_cast<float>(generated_paths_.front().path.front().max_v);
+    req.path.max_rotation_speed = static_cast<float>(generated_paths_.front().path.front().max_w);
+  }
+  req.path.max_angular_error = static_cast<float>(max_angle_error_);
+  req.path.max_distance_error = static_cast<float>(max_distance_error_);
   int path_id = 1;
   task_msgs::Point2d task_point_2d;
   ros::Duration duration(0.1);
@@ -113,17 +109,20 @@ void PathManager::SendPath(const std::string& frame_id) {
     const std::vector<nav_tools::GlobalPoint2d>& path = i->path;
     req.path.path_id = path_id;
     for (GlobalPoint2d::ConstIter p = path.begin(); p != path.end(); ++p) {
-      task_point_2d.x = p->x();
-      task_point_2d.y = p->y();
-      task_point_2d.angle = p->angle;
-      task_point_2d.dir_x = p->dir.x();
-      task_point_2d.dir_y = p->dir.y();
+      task_point_2d.x = static_cast<float>(p->x());
+      task_point_2d.y = static_cast<float>(p->y());
+      task_point_2d.angle = static_cast<float>(p->angle);
+      task_point_2d.dir_x = static_cast<float>(p->dir.x());
+      task_point_2d.dir_y = static_cast<float>(p->dir.y());
       req.path.poses.emplace_back(task_point_2d);
     }
     ++path_id;
-    add_task_client_.call(req, res);
+    if (!add_task_client_.call(req, res)) {
+      return false;
+    }
     duration.sleep();
   }
+  return true;
 }
 
 void PathManager::SavePath(const std::string& file_path) {
@@ -201,8 +200,9 @@ void PathManager::Load(const std::string& file_path) {
     else {
       line_str_list = split_string(data_str, kDataDelimiter);
       assert(line_str_list.size() == 10);
-      point.coord = Vec2f(std::atof(line_str_list[0].c_str()), std::atof(line_str_list[1].c_str()));
+      point.coord = V2f(std::atof(line_str_list[0].c_str()), std::atof(line_str_list[1].c_str()));
       point.angle = std::atof(line_str_list[2].c_str());
+      calc_dir(point.angle, point.dir);
       point.k = std::atof(line_str_list[3].c_str());
       point.s = std::atof(line_str_list[4].c_str());
       point.max_v = std::atof(line_str_list[5].c_str());
@@ -220,9 +220,9 @@ void PathManager::Load(const std::string& file_path) {
 void PathManager::GeneratePath(
     const Rectangle& rectangle,
     std::vector<boost::shared_ptr<nav_tools::AnalyticPath2d> >& paths) const {
-  Vec2f path_dir = rectangle.v1;
+  V2f path_dir = rectangle.v1;
   rFloat length = path_dir.norm();
-  Vec2f path_norm = rectangle.v2;
+  V2f path_norm = rectangle.v2;
   rFloat width = path_norm.norm();
   if (length <= 0.0 || width <= 0.0) {
     boost::shared_ptr<AnalyticPath2d> line = boost::make_shared<Line2d>
@@ -236,8 +236,8 @@ void PathManager::GeneratePath(
   if (multiply_2(longitude_spacing_length) > length) {
     longitude_spacing_length = 0.5 * length;
   }
-  const Vec2f longitude_spacing_vec = path_dir * (longitude_spacing_length / length);
-  const Vec2f longitude_vec = path_dir - (longitude_spacing_vec + longitude_spacing_vec);
+  const V2f longitude_spacing_vec = path_dir * (longitude_spacing_length / length);
+  const V2f longitude_vec = path_dir - (longitude_spacing_vec + longitude_spacing_vec);
 
   const rFloat path_number = ceil(width / path_latitude_spacing_);
   const rFloat latitude_spacing_length = width / path_number;
@@ -245,9 +245,9 @@ void PathManager::GeneratePath(
   const rFloat half_latitude_spacing = latitude_spacing_length * 0.5;
   rFloat cur_latitude = 0.0;
   const rFloat max_latitude_length = width + half_latitude_spacing;
-  Vec2f cur_start = rectangle.vertexes[0] + longitude_spacing_vec;
-  Vec2f cur_longitude_vec = longitude_vec;
-  Vec2f latitude_spacing_vec = path_norm * two_latitude_spacing;
+  V2f cur_start = rectangle.vertexes[0] + longitude_spacing_vec;
+  V2f cur_longitude_vec = longitude_vec;
+  V2f latitude_spacing_vec = path_norm * two_latitude_spacing;
   boost::shared_ptr<AnalyticPath2d> line1 = boost::make_shared<Line2d>
       (rectangle.vertexes[0], cur_start + cur_longitude_vec);
   cur_start += cur_longitude_vec;
@@ -261,7 +261,18 @@ void PathManager::GeneratePath(
     cur_start += cur_longitude_vec;
     boost::shared_ptr<CompositeClothoid2d> composite_clothoid =
         boost::make_shared<CompositeClothoid2d>();
-    composite_clothoid->FitTarget(line2->start(), line1->end(), *fit_param_);
+    GlobalPoint2d target(line2->start().coord,
+                         line2->start().dir,
+                         line2->start().angle,
+                         line2->start().k,
+                         line2->start().s,
+                         max_linear_speed_,
+                         max_rotation_speed_,
+                         0.0,
+                         0.0,
+                         0.0,
+                         false);
+    composite_clothoid->FitTarget(target, line1->end(), *fit_param_);
     paths.emplace_back(composite_clothoid);
     paths.emplace_back(line2);
     line1 = line2;
@@ -282,7 +293,18 @@ void PathManager::GeneratePath(
   cur_start += cur_longitude_vec;
   boost::shared_ptr<CompositeClothoid2d> composite_clothoid =
       boost::make_shared<CompositeClothoid2d>();
-  composite_clothoid->FitTarget(line2->start(), line1->end(), *fit_param_);
+  GlobalPoint2d target(line2->start().coord,
+                       line2->start().dir,
+                       line2->start().angle,
+                       line2->start().k,
+                       line2->start().s,
+                       max_linear_speed_,
+                       max_rotation_speed_,
+                       0.0,
+                       0.0,
+                       0.0,
+                       false);
+  composite_clothoid->FitTarget(target, line1->end(), *fit_param_);
   paths.emplace_back(composite_clothoid);
   paths.emplace_back(line2);
   line1 = line2;
@@ -294,7 +316,18 @@ void PathManager::GeneratePath(
     cur_start += cur_longitude_vec;
     boost::shared_ptr<CompositeClothoid2d> composite_clothoid =
         boost::make_shared<CompositeClothoid2d>();
-    composite_clothoid->FitTarget(line2->start(), line1->end(), *fit_param_);
+    GlobalPoint2d target(line2->start().coord,
+                         line2->start().dir,
+                         line2->start().angle,
+                         line2->start().k,
+                         line2->start().s,
+                         max_linear_speed_,
+                         max_rotation_speed_,
+                         0.0,
+                         0.0,
+                         0.0,
+                         false);
+    composite_clothoid->FitTarget(target, line1->end(), *fit_param_);
     paths.emplace_back(composite_clothoid);
     paths.emplace_back(line2);
     line1 = line2;
@@ -312,6 +345,8 @@ PathManager::PathManager()
   , max_angle_error_(0.05)
   , path_latitude_spacing_(0.6)
   , path_longitude_spacing_(0.5)
+  , max_linear_speed_(1.0)
+  , max_rotation_speed_(1.0)
   , default_file_dir_("time_log")
   , kDataDelimiter(" ")
   , kRectangleDelimeter("rectangle:") {
@@ -322,6 +357,8 @@ PathManager::PathManager()
   private_nh.param("path_longitude_spacing", path_longitude_spacing_, path_longitude_spacing_);
   fit_param_ = &NavigationConfig::get_instance().fit_param;
   private_nh.param("max_angle_error", max_angle_error_, max_angle_error_);
+  private_nh.param("max_linear_speed", max_linear_speed_, max_linear_speed_);
+  private_nh.param("max_rotation_speed", max_rotation_speed_, max_rotation_speed_);
   private_nh.param("default_file_dir", default_file_dir_, default_file_dir_);
   default_file_dir_ = getenv("HOME") + std::string("/") + default_file_dir_;
 

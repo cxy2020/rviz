@@ -133,7 +133,7 @@ int ZoneSelectionTool::processKeyEvent(QKeyEvent* event, RenderPanel* /*panel*/)
 //Transform the coordinates of the mouse event to those on the map.
 bool ZoneSelectionTool::transform_to_map(rviz::ViewportMouseEvent& event,
                                          int event_point[2],
-                                         Vec2f& map_point) {
+                                         V2f& map_point) {
   Ogre::Vector3 point;
   Ogre::Plane ground_plane(Ogre::Vector3::UNIT_Z, 0.0f);
   if (getPointOnPlaneFromWindowXY(event.viewport, ground_plane,
@@ -175,7 +175,7 @@ void ZoneSelectionTool::calculate_map_vertexes(rviz::ViewportMouseEvent& event,
                                                int vertex_0[2],
                                                int vertex_2[2],
                                                bool is_clock_wise,
-                                               Vec2f map_vertexes[4]) {
+                                               V2f map_vertexes[4]) {
   int vertex_1[2];
   int vertex_3[2];
   calculate_vertexes(vertex_0, vertex_2, is_clock_wise, vertex_1, vertex_3);
@@ -189,13 +189,13 @@ void ZoneSelectionTool::calculate_map_vertexes(rviz::ViewportMouseEvent& event,
   adjust_vertex(map_vertexes[2], map_vertexes[0], map_vertexes[1]);
 }
 
-void ZoneSelectionTool::adjust_vertex(const Vec2f& A, const Vec2f& C, Vec2f& B) {
-  Vec2f dir_AB = B - A;
+void ZoneSelectionTool::adjust_vertex(const V2f& A, const V2f& C, V2f& B) {
+  V2f dir_AB = B - A;
   dir_AB.normalize();
-  Vec2f dir_BC = Vec2f(-dir_AB[1], dir_AB[0]);
-  Vec2f BC = C - B;
+  V2f dir_BC = V2f(-dir_AB[1], dir_AB[0]);
+  V2f BC = C - B;
   rFloat length = dir_BC.dot(BC);
-  Vec2f adjust_BC = dir_BC * length;
+  V2f adjust_BC = dir_BC * length;
   B = C - adjust_BC;
 }
 

@@ -1,11 +1,13 @@
 #include "rviz/default_plugin/custom_tools/send_goto_tool.h"
 
 #include <tf/transform_listener.h>
+#include <QMessageBox>
 
 #include "task_msgs/SendTaskInfo.h"
 #include "nav_tools/nav/path_type.h"
 #include "nav_tools/path/base_path_tool.h"
 #include "rviz/display_context.h"
+#include "rviz/window_manager_interface.h"
 
 using namespace rock::nav_tools;
 
@@ -33,16 +35,19 @@ void SendGotoTool::onPoseSet(double x, double y, double theta) {
   req.path.is_path_reversed = false;
 
   task_msgs::Point2d target_point;
-  target_point.x = x;
-  target_point.y = y;
-  target_point.angle = theta;
-  Vec2f dir;
+  target_point.x = static_cast<float>(x);
+  target_point.y = static_cast<float>(y);
+  target_point.angle = static_cast<float>(theta);
+  V2f dir;
   calc_dir(theta, dir);
-  target_point.dir_x = dir.x();
-  target_point.dir_y = dir.y();
+  target_point.dir_x = static_cast<float>(dir.x());
+  target_point.dir_y = static_cast<float>(dir.y());
   req.path.poses.emplace_back(target_point);
 
-  set_task_client_.call(req, res);
+  if (!set_task_client_.call(req, res)) {
+    QMessageBox::warning(context_->getWindowManager()->getParentWindow(),
+                         "Send goto result", "Failed to send goto task!");
+  }
 }
 
 }   //namespace custom_tools

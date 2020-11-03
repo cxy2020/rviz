@@ -1,6 +1,7 @@
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   nav_tools
+  amcl
 )
 
 find_library(NAV_TOOLS_LIB nav_tools)
@@ -81,7 +82,8 @@ set(SOURCE_FILES
   custom_tools/send_goto_tool.cpp
   custom_tools/zone_selection_tool.cpp
   custom_tools/task_control_tool.cpp
-  custom_tools/re_locate_tool.cpp
+  custom_tools/relocate_gazebo_tool.cpp
+  custom_tools/relocate_amcl_tool.cpp
 )
 
 include_directories(

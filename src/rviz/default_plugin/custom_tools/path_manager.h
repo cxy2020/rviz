@@ -60,7 +60,7 @@ public:
 
   void PublishPath(const std::string& frame_id) const;
 
-  void SendPath(const std::string& frame_id);
+  bool SendPath(const std::string& frame_id);
 
   void SavePath(const std::string& file_path);
 
@@ -89,6 +89,8 @@ private:
   rFloat max_angle_error_;
   rFloat path_latitude_spacing_;
   rFloat path_longitude_spacing_;
+  rFloat max_linear_speed_;
+  rFloat max_rotation_speed_;
   nav_tools::FitParam* fit_param_;
   std::string default_file_dir_;
   const std::string kDataDelimiter;

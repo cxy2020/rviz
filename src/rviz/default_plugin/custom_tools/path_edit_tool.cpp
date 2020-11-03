@@ -1,14 +1,15 @@
 #include "rviz/default_plugin/custom_tools/path_edit_tool.h"
 
 #include <ros/ros.h>
-
 #include <QFileDialog>
+#include <QMessageBox>
 
 #include "rviz/display_context.h"
 #include "rviz/viewport_mouse_event.h"
 #include "rviz/render_panel.h"
 #include "rviz/default_plugin/custom_tools/path_manager.h"
 #include "rviz/selection/selection_manager.h"
+#include "rviz/window_manager_interface.h"
 
 using namespace rock::nav_tools;
 
@@ -82,7 +83,10 @@ int PathEditTool::processKeyEvent(QKeyEvent* event, rviz::RenderPanel* panel) {
     break;
   //Send the paths in the selected zone.
   case Qt::Key_T: {
-    path_manager.SendPath(context_->getFixedFrame().toStdString());
+    if (!path_manager.SendPath(context_->getFixedFrame().toStdString())) {
+      QMessageBox::warning(context_->getWindowManager()->getParentWindow(),
+                           "Send path result", "Send path failed!");
+    }
     is_operation_key_pressed_ = true;
   }
     break;

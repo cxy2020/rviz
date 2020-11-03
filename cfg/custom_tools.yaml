@@ -7,4 +7,10 @@ max_distance_error: 0.05
 # The max angle error of the cleaning path.
 max_angle_error: 0.05
 # The file to save the generated path.
+# The max linear speed.
+max_linear_speed: 1.5
+# The max rotation speed.
+max_rotation_speed: 1.0
 default_file_dir: time_log
+# The width of of the squre rectangle to relocate from amcl.
+relocat_width: 1.0

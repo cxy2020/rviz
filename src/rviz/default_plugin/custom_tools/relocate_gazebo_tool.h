@@ -21,66 +21,48 @@
  **************************************************************************************************/
 
 /**
- * @file zone.h
+ * @file relocate_gazebo_tool.h
  * @author Xiaoying Chen
  */
 
 #pragma once
 
-#include <vector>
-#include <eigen3/Eigen/Dense>
-#include <boost/shared_ptr.hpp>
+#include <ros/ros.h>
+#include <geometry_msgs/PoseStamped.h>
+#include <gazebo_msgs/ModelStates.h>
 
-#include "nav_tools/common/base_data_type.h"
-#include "nav_tools/path/global_point_2d.h"
+#include "rviz/tool.h"
+
+namespace rviz {
+class FloatProperty;
+}
 
 namespace rock {
 namespace custom_tools {
 
 /**
- * @struct Rectangle
- * @brief The struct containing geometry information of rectangle zone.
+ * @class RelocateGazeboTool
+ * @brief The tool to relocate the robot from gazebo's realtime robot pose.
  */
-struct Rectangle {
-  //The 4 vertex of the rectangle
-  V2f vertexes[4];
-  //The vector starting from the first vertex and ending at the second vertex.
-  V2f v1;
-  //The vector starting from the second vertex and ending at the third vertex.
-  V2f v2;
+class RelocateGazeboTool : public rviz::Tool {
+public:
+  RelocateGazeboTool();
 
-  inline bool is_inside(const V2f& point) const {
-    V2f vec1 = point - vertexes[0];
-    if (vec1.dot(v2) < 0.0)
-      return false;
-    if (vec1.dot(v1) < 0.0)
-      return false;
-    vec1 = point - vertexes[2];
-    if (vec1.dot(v1) > 0.0)
-      return false;
-    if (vec1.dot(v2) > 0.0)
-      return false;
-    return true;
-  }
+  virtual void activate();
 
-  inline bool is_intersect(const Rectangle& rectangle) const {
-    for (int i = 0; i < 4; ++i) {
-      if (is_inside(rectangle.vertexes[i]))
-        return true;
-      if (rectangle.is_inside(vertexes[i]))
-        return true;
-    }
-    return false;
-  }
-};
+  virtual void deactivate() {}
 
-/**
- * @struct GeneratedPath
- * @brief The struct containing path generated with UI.
- */
-struct GeneratedPath {
-  std::vector<nav_tools::GlobalPoint2d> path;
-  Rectangle rectangle;
+private:
+  void OnPoseUpdated(const gazebo_msgs::ModelStates &msg);
+
+  geometry_msgs::PoseStamped current_pose_;
+  bool is_updated_;
+  rviz::FloatProperty* std_dev_x_;
+  rviz::FloatProperty* std_dev_y_;
+  rviz::FloatProperty* std_dev_theta_;
+
+  ros::Publisher location_pub_;
+  ros::Subscriber pose_sub_;
 };
 
 }   //namespace custom_tools

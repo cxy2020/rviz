@@ -21,48 +21,33 @@
  **************************************************************************************************/
 
 /**
- * @file send_goto_tool.h
+ * @file relocate_amcl_tool.h
  * @author Xiaoying Chen
  */
 
 #pragma once
 
-#include <ros/ros.h>
-#include <geometry_msgs/PoseStamped.h>
-#include <gazebo_msgs/ModelStates.h>
-
-#include "rviz/tool.h"
-
-namespace rviz {
-class FloatProperty;
-}
+#include "rviz/default_plugin/tools/pose_tool.h"
 
 namespace rock {
 namespace custom_tools {
 
 /**
- * @class ReLocateTool
- * @brief The tool to relocate the robot from realtime robot pose.
+ * @class RelocateAmclTool
+ * @brief The tool to relocate the robot from amcl.
  */
-class ReLocateTool : public rviz::Tool {
+class RelocateAmclTool : public rviz::PoseTool {
 public:
-  ReLocateTool();
+  RelocateAmclTool();
 
-  virtual void activate();
-
-  virtual void deactivate() {}
+protected:
+  void onPoseSet(double x, double y, double theta) override;
 
 private:
-  void OnPoseUpdated(const gazebo_msgs::ModelStates &msg);
-
-  geometry_msgs::PoseStamped current_pose_;
-  bool is_updated_;
-  rviz::FloatProperty* std_dev_x_;
-  rviz::FloatProperty* std_dev_y_;
-  rviz::FloatProperty* std_dev_theta_;
-
-  ros::Publisher location_pub_;
-  ros::Subscriber pose_sub_;
+  ros::NodeHandle nh_;
+  ros::ServiceClient set_task_client_;
+  //The width of the square generated OnPoseSet to relocate with amcl.
+  double square_width_;
 };
 
 }   //namespace custom_tools

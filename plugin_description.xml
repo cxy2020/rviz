@@ -270,9 +270,14 @@
       Plugin for sending goto task.
     </description>
   </class>
-  <class name="custom_tools/ReLocate" type="rock::custom_tools::ReLocateTool" base_class_type="rviz::Tool">
+  <class name="custom_tools/RelocateGazebo" type="rock::custom_tools::RelocateGazeboTool" base_class_type="rviz::Tool">
     <description>
-      Plugin for relocate the robot from realtime robot pose.
+      Plugin for relocate the robot from gazebo's realtime robot pose.
+    </description>
+  </class>
+  <class name="custom_tools/RelocateAmcl" type="rock::custom_tools::RelocateAmclTool" base_class_type="rviz::Tool">
+    <description>
+      Plugin for relocate the robot from amcl.
     </description>
   </class>
 

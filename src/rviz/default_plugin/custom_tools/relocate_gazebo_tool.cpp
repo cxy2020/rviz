@@ -1,4 +1,4 @@
-#include "rviz/default_plugin/custom_tools/re_locate_tool.h"
+#include "rviz/default_plugin/custom_tools/relocate_gazebo_tool.h"
 
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 
@@ -10,10 +10,10 @@ using namespace rviz;
 namespace rock {
 namespace custom_tools {
 
-ReLocateTool::ReLocateTool() : is_updated_(false) {
+RelocateGazeboTool::RelocateGazeboTool() : is_updated_(false) {
   ros::NodeHandle nh;
   location_pub_ = nh.advertise<geometry_msgs::PoseWithCovarianceStamped>("initialpose", 1);
-  pose_sub_ = nh.subscribe("gazebo/model_states", 1000, &ReLocateTool::OnPoseUpdated, this);
+  pose_sub_ = nh.subscribe("gazebo/model_states", 1000, &RelocateGazeboTool::OnPoseUpdated, this);
   std_dev_x_ = new FloatProperty("X std deviation", 0.5, "X standard deviation for initial pose [m]", getPropertyContainer());
   std_dev_y_ = new FloatProperty("Y std deviation", 0.5, "Y standard deviation for initial pose [m]", getPropertyContainer());
   std_dev_theta_ = new FloatProperty("Theta std deviation", M_PI / 12.0, "Theta standard deviation for initial pose [rad]", getPropertyContainer());
@@ -22,7 +22,7 @@ ReLocateTool::ReLocateTool() : is_updated_(false) {
   std_dev_theta_->setMin(0);
 }
 
-void ReLocateTool::activate() {
+void RelocateGazeboTool::activate() {
   geometry_msgs::PoseWithCovarianceStamped pose;
   pose.header.frame_id = current_pose_.header.frame_id;
   pose.header.stamp = ros::Time::now();
@@ -33,7 +33,7 @@ void ReLocateTool::activate() {
   location_pub_.publish(pose);
 }
 
-void ReLocateTool::OnPoseUpdated(const gazebo_msgs::ModelStates& msg) {
+void RelocateGazeboTool::OnPoseUpdated(const gazebo_msgs::ModelStates& msg) {
   //Update current pose.
   current_pose_.header.frame_id = context_->getFixedFrame().toStdString();
   current_pose_.header.stamp = ros::Time::now();
@@ -50,4 +50,4 @@ void ReLocateTool::OnPoseUpdated(const gazebo_msgs::ModelStates& msg) {
 }   //namespace rock
 
 #include <pluginlib/class_list_macros.hpp>
-PLUGINLIB_EXPORT_CLASS(rock::custom_tools::ReLocateTool, rviz::Tool)
+PLUGINLIB_EXPORT_CLASS(rock::custom_tools::RelocateGazeboTool, rviz::Tool)
